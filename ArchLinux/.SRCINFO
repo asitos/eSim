@@ -1,0 +1,32 @@
+pkgbase = esim
+	pkgdesc = Open-source EDA tool for circuit design, mixed-signal simulation, and PCB layout (FOSSEE, IIT Bombay)
+	pkgver = 2.5
+	pkgrel = 1
+	url = https://esim.fossee.in
+	arch = x86_64
+	license = GPL-2.0-or-later
+	makedepends = git
+	makedepends = make
+	makedepends = autoconf
+	makedepends = flex
+	makedepends = bison
+	makedepends = clang
+	makedepends = llvm18
+	makedepends = python-pip
+	makedepends = python-virtualenv
+	depends = python
+	depends = python-pyqt5
+	depends = python-matplotlib
+	depends = python-numpy
+	depends = python-watchdog
+	depends = kicad
+	depends = libcanberra
+	depends = libxaw
+	depends = zlib
+	depends = gcc-ada
+	depends = llvm18-libs
+	optdepends = makerchip-app: TL-Verilog support via SandPiper
+	source = git+https://github.com/asitos/eSim.git#branch=installers
+	sha256sums = SKIP
+
+pkgname = esim

@@ -1,0 +1,165 @@
+# Maintainer: Ashutosh Parashar <https://github.com/asitos>
+# Contributor: FOSSEE, IIT Bombay <https://fossee.in>
+#
+# eSim: open-source EDA tool for circuit design, simulation, and PCB layout.
+# Bundles a patched ngspice-35 (XSPICE/co-sim), GHDL 4.1.0 (LLVM backend),
+# and Verilator 4.210 from upstream tarballs inside the eSim release.
+#
+# GHDL 4.1.0 needs LLVM <= 18. Arch's official [extra] repository provides
+# llvm18 and llvm18-libs (/usr/bin/llvm-config-18, /usr/lib/llvm18/bin/llvm-config).
+
+pkgname=esim
+pkgver=2.5
+pkgrel=1
+pkgdesc='Open-source EDA tool for circuit design, mixed-signal simulation, and PCB layout (FOSSEE, IIT Bombay)'
+arch=('x86_64')
+url='https://esim.fossee.in'
+license=('GPL-2.0-or-later')
+depends=(
+    'python'
+    'python-pyqt5'
+    'python-matplotlib'
+    'python-numpy'
+    'python-watchdog'
+    'kicad'
+    'libcanberra'
+    'libxaw'
+    'zlib'
+    'gcc-ada'       # GNAT for GHDL
+    'llvm18-libs'   # runtime lib for GHDL LLVM backend (from [extra])
+)
+makedepends=(
+    'git'
+    'make'
+    'autoconf'
+    'flex'
+    'bison'
+    'clang'
+    'llvm18'        # llvm-config-18 for GHDL build (from [extra])
+    'python-pip'
+    'python-virtualenv'
+)
+optdepends=(
+    'makerchip-app: TL-Verilog support via SandPiper'
+)
+source=("git+https://github.com/asitos/eSim.git#branch=installers")
+sha256sums=('SKIP')
+
+# eSim bundles ghdl, verilator, and a patched ngspice inside nghdl.zip.
+# We build them from those bundled tarballs to match upstream expectations.
+
+prepare() {
+    cd "$srcdir/eSim"
+
+    # unpack nghdl.zip to get bundled tarballs
+    unzip -o nghdl.zip
+
+    # unpack kicad symbol libraries
+    tar -xJf library/kicadLibrary.tar.xz -C library/
+}
+
+build() {
+    cd "$srcdir/eSim/nghdl"
+
+    # --- GHDL 4.1.0 (LLVM 18 backend) ---
+    tar xf ghdl-4.1.0.tar.gz
+    cd ghdl-4.1.0
+    ./configure --with-llvm-config=/usr/lib/llvm18/bin/llvm-config \
+                --prefix=/usr
+    make -j$(nproc)
+    cd ..
+
+    # --- Verilator 4.210 ---
+    tar xf verilator-4.210.tar.xz
+    cd verilator-4.210
+    ./configure --prefix=/usr
+    make -j$(nproc)
+    cd ..
+
+    # --- Patched Ngspice (XSPICE/co-sim) ---
+    tar xJf nghdl-simulator-source.tar.xz
+    cd nghdl-simulator-source
+    mkdir -p release && cd release
+    ../configure --enable-xspice --disable-debug \
+                 --prefix=/usr \
+                 --exec-prefix=/usr
+    make -j$(nproc)
+    cd ../..
+
+    # --- Python dependencies in a venv ---
+    cd "$srcdir/eSim"
+    python -m venv --system-site-packages build_env
+    source build_env/bin/activate
+    pip install --quiet hdlparse
+    deactivate
+}
+
+package() {
+    cd "$srcdir/eSim"
+
+    # install GHDL
+    cd nghdl/ghdl-4.1.0
+    make DESTDIR="$pkgdir" install
+    cd ../..
+
+    # install Verilator
+    cd nghdl/verilator-4.210
+    make DESTDIR="$pkgdir" install
+    cd ../..
+
+    # install patched Ngspice
+    cd nghdl/nghdl-simulator-source/release
+    make DESTDIR="$pkgdir" install
+    cd ../../..
+
+    # install eSim application to /opt/esim
+    install -dm755 "$pkgdir/opt/esim"
+    cp -a src Examples library images "$pkgdir/opt/esim/"
+
+    # install KiCad symbol libraries
+    install -dm755 "$pkgdir/usr/share/kicad/symbols"
+    cp library/*.kicad_sym "$pkgdir/usr/share/kicad/symbols/" 2>/dev/null || true
+
+    # install SKY130 PDK
+    install -dm755 "$pkgdir/usr/share/local"
+    tar -xJf library/sky130_fd_pr.tar.xz -C "$pkgdir/usr/share/local/"
+
+    # install Python deps into the package venv
+    install -dm755 "$pkgdir/opt/esim/env"
+    python -m venv --system-site-packages "$pkgdir/opt/esim/env"
+    "$pkgdir/opt/esim/env/bin/pip" install --quiet hdlparse watchdog
+
+    # launcher script
+    install -dm755 "$pkgdir/usr/bin"
+    cat > "$pkgdir/usr/bin/esim" << 'EOF'
+#!/bin/bash
+cd /opt/esim/src/frontEnd
+source /opt/esim/env/bin/activate
+python3 Application.py "$@"
+EOF
+    chmod 755 "$pkgdir/usr/bin/esim"
+
+    # desktop entry and icon
+    install -dm755 "$pkgdir/usr/share/pixmaps"
+    cp images/logo.png "$pkgdir/usr/share/pixmaps/esim.png"
+
+    install -Dm644 /dev/stdin "$pkgdir/usr/share/applications/esim.desktop" << EOF
+[Desktop Entry]
+Name=eSim
+Comment=Open-source EDA tool (FOSSEE, IIT Bombay)
+Exec=esim
+Icon=esim
+Terminal=false
+Type=Application
+Categories=Education;Electronics;Engineering;
+EOF
+
+    # NGHDL launcher
+    install -dm755 "$pkgdir/usr/bin"
+    cp nghdl/src/ngspice_ghdl.py "$pkgdir/usr/bin/nghdl" 2>/dev/null || true
+    chmod 755 "$pkgdir/usr/bin/nghdl" 2>/dev/null || true
+
+    # license
+    install -Dm644 "$srcdir/eSim/src/configuration/Appconfig.py" \
+        "$pkgdir/usr/share/licenses/$pkgname/Appconfig.py"
+}
