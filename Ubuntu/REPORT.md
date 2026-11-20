@@ -278,7 +278,7 @@ GHDL 4.1.0 (tarball) [Dunoon edition]
  Compiled with GNAT Version: 14.2.0
 
 # 4. Verilator verification
-$ verilator --version 
+$ verilator --version
 Verilator 4.210 2021-07-07 rev v4.204-73-g8e2ba6a00
 
 # 5. Isolated Python virtual environment dependencies
@@ -339,5 +339,5 @@ esim
 * **Repository:** [https://github.com/asitos/eSim/tree/installers](https://github.com/asitos/eSim/tree/installers)
 * **Branch:** `installers`
 * **Submission Subject:** `eSim Semester Long Internship - Autumn 2026 Submission Task 4`
-* **Contact Email:** `contact-esim@fossee.in`
+* **Contact Email:** `4shut0shparashar@gmail.com`
 
