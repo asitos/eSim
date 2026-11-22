@@ -298,7 +298,17 @@ analysis of `src/frontEnd/Workspace.py` pinpointed the root cause:
 
 a simple patch adding `self.var_appView.show()` and replacing `time.sleep` with `QCoreApplication.processEvents()` resolves this bug permanently.
 
----
+## system specifications matrix
+
+| specification | target verification VM | development workstation |
+|---|---|---|
+| **operating system** | Ubuntu 25.04 (Plucky Puffin, x86_64) | Arch Linux / CachyOS (x86_64) |
+| **linux kernel** | Linux 6.14.0-generic | Linux 6.17-cachyos |
+| **hypervisor / hardware** | QEMU / KVM (Virt-Manager) | Bare Metal Workstation |
+| **CPU / memory** | 4 vCPU, 4 GB RAM, 30 GB disk | 16 Threads, 32 GB RAM |
+| **core toolchains** | GCC 14.2.0, LLVM 18.1.8, GNAT 14.2.0 | GCC 16.0 (prerelease), LLVM 18.1.8 |
+| **python runtime** | Python 3.13 (system + virtualenv) | Python 3.14 (system + virtualenv) |
+| **EDA components** | KiCad 8.0.8, Ngspice 35, GHDL 4.1.0, Verilator 4.210 | PKGBUILD verified (`/opt/esim`) |
 
 ## instructions for evaluators (reproduction guide)
 
@@ -341,7 +351,7 @@ building eSim on modern rolling distributions exposed four compiler and toolchai
 
 the resulting package (`esim-2.5-1-x86_64.pkg.tar.zst`, 213 MB) installs cleanly into `/opt/esim` with system launchers in `/usr/bin/`. i can commit to maintaining this package on the AUR (`yay -S esim`) during the internship.
 
-and on a side note, im also learning to use nixOS, and am willing to work for a nix specific package and maintain it later.
+and as a side note, im also learning to use nixOS and integrating devops in my other projects, and am willing to work for a nix specific package, and ci/cd pipeline integrations for eSim, and maintain them in future.
 
 ---
 
