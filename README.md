@@ -1,7 +1,7 @@
 # eSim 2.5 on Ubuntu 25.04: report of fixes & verification
 
 Ashutosh Parashar ([@asitos](https://github.com/asitos)) <br>
-Screening Task 4 · FOSSEE Semester-Long Internship, Winter 2026
+Screening Task 4 · FOSSEE Semester-Long Internship, Autumn 2026
 
 ---
 
@@ -73,6 +73,8 @@ some linux installer scripts (Ubuntu, Fedora) expects these paths at the reposit
 | 8 | app fails to launch: `src/frontEnd` missing | unavailable | relocated `src/`, `Examples/`, sub-libraries to root | [`d9d3a534`](https://github.com/asitos/eSim/commit/d9d3a534) |
 | 9 | kiCad 8 schematic editor ignores eSim symbol libraries | unavailable | wrote `sym-lib-table` to `~/.config/kicad/8.0/` and `6.0/` | [`d9d3a534`](https://github.com/asitos/eSim/commit/d9d3a534) |
 | 10 | interactive prompt stall on `apt install` & empty version string | unavailable | added `-y` flag; updated regex to `\d+\.\d+(\.\d+)?` | [`f10003ee`](https://github.com/asitos/eSim/commit/f10003ee) |
+| 11 | minimal cloud image missing archive utilities & legacy pip crash | unavailable | added `unzip` and `xz-utils`; purged broken PyPI `hdlparse` call | upcoming |
+| 12 | forward compatibility for 25.10 / 26.04 & unpinned kicad fallback | unavailable | routed interim/future releases to 25.04; added dynamic KiCad fallback | upcoming |
 
 ## key verification results
 
@@ -304,7 +306,9 @@ during testing, a few hypotheses were investigated and ruled out to avoid guessi
 - **`libncurses5-dev` virtual package:** ngspice references `libncurses5-dev`. on Ubuntu 25.04 this resolves cleanly to the virtual package alias `libncurses-dev`.
 - **verilator 4.210 on GCC 14:** tested whether Verilator 4.210 compilation broke on GCC 14. it compiled and passed without source modifications.
 - **python 3.13 stdlib deprecations:** Python 3.13 dropped legacy modules like `telnetlib` and `cgi`. audited the eSim codebase; none of these modules are imported.
+- **legacy `hdlparse` vs `pyhdlparser`:** PyPI `hdlparse` 1.0.4 fails during `pip install` with `use_2to3 is invalid` on setuptools $\ge 58$. eSim 25.04 installer previously called `pip3 install hdlparse` after fetching `pyhdlparser`. purged the redundant PyPI install call to keep the working setuptools-compliant fork intact.
 - **missing `~/Desktop` directory:** on minimal Ubuntu cloud images, container environments, or headless setups, `$HOME/Desktop` does not exist by default, which causes the final `cp` step to fail. added `mkdir -p "$HOME/Desktop"` so the installer runs cleanly even without a desktop environment.
+- **missing minimal archive extraction tools:** minimal Ubuntu images lack `unzip` and `xz-utils` by default, failing archive extractions. added both explicitly to `installDependency()`.
 
 ## ubuntu 25.04 release lifecycle & EOL note
 

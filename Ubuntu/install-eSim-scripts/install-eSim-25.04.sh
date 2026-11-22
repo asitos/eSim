@@ -151,7 +151,10 @@ function installKicad
     fi
 
     # Install KiCad packages
-    sudo apt-get install -y --no-install-recommends kicad=8.0.8+dfsg-1 kicad-footprints kicad-libraries kicad-symbols kicad-templates
+    if ! sudo apt-get install -y --no-install-recommends kicad=8.0.8+dfsg-1 kicad-footprints kicad-libraries kicad-symbols kicad-templates; then
+        echo "Pinned KiCad version not found, falling back to unpinned KiCad 8.x..."
+        sudo apt-get install -y --no-install-recommends kicad kicad-footprints kicad-libraries kicad-symbols kicad-templates
+    fi
 
     echo "KiCad installation completed successfully!"
 }
@@ -170,6 +173,9 @@ function installDependency
     set -e      # Re-enable exit on error
     trap error_exit ERR
     
+    echo "Installing archive utilities (unzip, xz-utils)...."
+    sudo apt-get install -y unzip xz-utils
+
     echo "Instaling virtualenv......................."
     sudo apt install -y python3-virtualenv
    
@@ -212,10 +218,6 @@ function installDependency
 
     echo "Installing SandPiper Saas.................."
     pip3 install sandpiper-saas
-
-   
-    echo "Installing Hdlparse......................"
-    pip3 install hdlparse
 
     echo "Installing matplotlib................"
     pip3 install matplotlib

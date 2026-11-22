@@ -251,7 +251,29 @@ Below is a record of the issues investigated, traced through git history, and re
 
 ---
 
-### 11. Investigated and Ruled Out (Negative Results)
+### 11. Minimal Image Archive Tooling & PyPI `hdlparse` Purge
+
+* **Symptom:**
+  1. On minimal Ubuntu base installations (e.g. minimal desktop, container images, WSL, or server roots), `unzip` and `xz-utils` are absent, causing the installer to fail at `unzip -o nghdl.zip` or `tar -xJf library/sky130_fd_pr.tar.xz` with `command not found` errors.
+  2. In `installDependency()`, an old lingering command `pip3 install hdlparse` executed after installing `pyhdlparser`. On modern Python environments with `setuptools >= 58`, PyPI `hdlparse` fails with `error in hdlparse setup command: use_2to3 is invalid`.
+* **Fix Applied:**
+  1. Added `sudo apt-get install -y unzip xz-utils` directly inside `installDependency()` before any extraction routine runs.
+  2. Purged the redundant `pip3 install hdlparse` call, preserving the working `pyhdlparser` drop-in fork.
+
+---
+
+### 12. Forward Compatibility Routing (Ubuntu 25.10 & 26.04) & Dynamic KiCad Fallback
+
+* **Symptom:**
+  1. Users running Ubuntu 25.10 or pre-release 26.04 LTS encountered immediate `Unsupported Ubuntu version` exits in `install-eSim.sh` and `nghdl/install-nghdl.sh`.
+  2. KiCad installation pinned exact package release `kicad=8.0.8+dfsg-1`. When downstream Debian/Ubuntu repositories bump point releases (e.g., `8.0.9`), the pin fails with `version not found`.
+* **Fix Applied:**
+  1. Added forward routing `"25.04"|"25.10"|"26.04")` in both `Ubuntu/install-eSim.sh` and `nghdl/install-nghdl.sh`, allowing compatible modern toolchains to run in compatibility mode with fallback full-version string detection.
+  2. Added dynamic fallback logic in `installKicad()`: if the pinned version fails, apt automatically falls back to unpinned `kicad 8.x` from the official KiCad PPA.
+
+---
+
+### 13. Investigated and Ruled Out (Negative Results)
 
 To avoid speculative modifications or applying unneeded workarounds, several potential failure modes were empirically tested and ruled out:
 
@@ -262,7 +284,7 @@ To avoid speculative modifications or applying unneeded workarounds, several pot
 
 ---
 
-### 12. Ubuntu 25.04 Release Lifecycle & EOL Note
+### 14. Ubuntu 25.04 Release Lifecycle & EOL Note
 
 Ubuntu 25.04 (Plucky Puffin) is an interim release supported for 9 months, reaching official End-of-Life (EOL) in January 2026. 
 * Current testing confirms `archive.ubuntu.com` and `security.ubuntu.com` continue serving Plucky package pools.
@@ -359,6 +381,6 @@ esim
 
 * **Repository:** [https://github.com/asitos/eSim/tree/installers](https://github.com/asitos/eSim/tree/installers)
 * **Branch:** `installers`
-* **Submission Subject:** `eSim Semester Long Internship - Winter 2026 Submission Task 4`
+* **Submission Subject:** `eSim Semester Long Internship - Autumn 2026 Submission Task 4`
 * **Contact Email:** `4shut0shparashar@gmail.com`
 

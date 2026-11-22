@@ -23,7 +23,8 @@
 # Function to detect Ubuntu version and full version string
 get_ubuntu_version() {
     VERSION_ID=$(grep "^VERSION_ID" /etc/os-release | cut -d '"' -f 2)
-    FULL_VERSION=$(lsb_release -d | grep -oP '\d+\.\d+(\.\d+)?')
+    FULL_VERSION=$(lsb_release -d 2>/dev/null | grep -oP '\d+\.\d+(\.\d+)?' || true)
+    FULL_VERSION="${FULL_VERSION:-$VERSION_ID}"
     echo "Detected Ubuntu Version: $FULL_VERSION"
 }
 
@@ -46,7 +47,10 @@ run_version_script() {
         "24.04")
             SCRIPT="$SCRIPT_DIR/install-eSim-24.04.sh"
             ;;
-        "25.04")
+        "25.04"|"25.10"|"26.04")
+            if [[ "$VERSION_ID" != "25.04" ]]; then
+                echo "Notice: Running Ubuntu $VERSION_ID in compatibility mode using 25.04 installer."
+            fi
             SCRIPT="$SCRIPT_DIR/install-eSim-25.04.sh"
             ;;
         *)
