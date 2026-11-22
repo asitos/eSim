@@ -1,7 +1,7 @@
 # eSim 2.5 on Ubuntu 25.04: report of fixes & verification
 
 Ashutosh Parashar ([@asitos](https://github.com/asitos)) <br>
-Screening Task 4 · FOSSEE Semester-Long Internship, Autumn 2026
+Screening Task 4 · FOSSEE Semester-Long Internship, Winter 2026
 
 ---
 

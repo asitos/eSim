@@ -286,7 +286,7 @@ To avoid speculative modifications or applying unneeded workarounds, several pot
 
 ### 14. Ubuntu 25.04 Release Lifecycle & EOL Note
 
-Ubuntu 25.04 (Plucky Puffin) is an interim release supported for 9 months, reaching official End-of-Life (EOL) in January 2026. 
+Ubuntu 25.04 (Plucky Puffin) is an interim release supported for 9 months, reaching official End-of-Life (EOL) in January 2026.
 * Current testing confirms `archive.ubuntu.com` and `security.ubuntu.com` continue serving Plucky package pools.
 * For enterprise or classroom deployments, users should target LTS versions (Ubuntu 24.04 LTS or upcoming 26.04 LTS).
 * If canonical mirrors transition Plucky to the archive server in the future, updating `/etc/apt/sources.list.d/ubuntu.sources` to `http://old-releases.ubuntu.com/ubuntu/` restores full repository access.
@@ -381,6 +381,6 @@ esim
 
 * **Repository:** [https://github.com/asitos/eSim/tree/installers](https://github.com/asitos/eSim/tree/installers)
 * **Branch:** `installers`
-* **Submission Subject:** `eSim Semester Long Internship - Autumn 2026 Submission Task 4`
+* **Submission Subject:** `eSim Semester Long Internship - Winter 2026 Submission Task 4`
 * **Contact Email:** `4shut0shparashar@gmail.com`
 
