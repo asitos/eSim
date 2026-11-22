@@ -26,7 +26,10 @@ pkgbase = esim
 	depends = gcc-ada
 	depends = llvm18-libs
 	optdepends = makerchip-app: TL-Verilog support via SandPiper
+	options = !lto
 	source = git+https://github.com/asitos/eSim.git#branch=installers
+	source = pyhdlparser::git+https://github.com/hdl/pyhdlparser.git
+	sha256sums = SKIP
 	sha256sums = SKIP
 
 pkgname = esim

@@ -1,0 +1,5 @@
+# Makepkg artifacts
+ArchLinux/eSim/
+ArchLinux/src/
+ArchLinux/pkg/
+*.pkg.tar.*

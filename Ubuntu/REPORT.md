@@ -235,16 +235,16 @@ Below is a record of the issues investigated, traced through git history, and re
 ### 9. Architectural Analysis: First-Launch Window Unmapping
 
 * **Background:**
-  During community testing of eSim on fresh systems, several applicants noted that on the very first start, eSim's main window stayed unmapped after accepting the workspace dialog (`xwininfo` reported `IsUnMapped`), while subsequent launches worked normally.
+  During testing of eSim on fresh Ubuntu systems, we investigated a recurring issue where on the very first start, eSim's main window stayed unmapped after accepting the workspace dialog (`xwininfo` reported `IsUnMapped`), while subsequent launches worked normally.
 * **Root Cause Diagnostics:**
   In `src/frontEnd/Workspace.py`, `createWorkspace()` creates `~/.esim/workspace.txt` and updates UI widgets, but executes `time.sleep(1.5)` directly on Qt's main event thread while modal modality is active (`self.setWindowModality(2)`). After closing the splash, it never calls `var_appView.show()` or `var_appView.activateWindow()`. On subsequent launches, `work != 0` bypasses the modal dialog entirely via `defaultWorkspace()`, mapping the window cleanly without the modal blocking interruption.
 
 ---
 
-### 10. Architectural Comparison: Self-Contained Branch vs Fragmented External Zips
+### 10. Architectural Integrity: 100% Self-Contained installers Branch
 
 * **The Challenge:**
-  Multiple applicants attempted Screening Task 4 by abandoning the `installers` branch, claiming that it lacked binary archives, and instead downloaded `eSim-2.5.zip` from static servers onto ad-hoc personal branches (`ubuntu-25.04-fixes`).
+  A common assumption when encountering missing archives on `installers` is that the branch was never populated with binary assets, tempting one to bypass the branch and pull `eSim-2.5.zip` from external static servers.
 * **The Engineering Integrity Approach:**
   Task 4 explicitly specified working on the `installers` branch. Git forensics proved that all required release assets (`kicadLibrary`, `nghdl.zip`, `sky130_fd_pr`, `src/`, `Examples/`, and `images/`) were already present in the Git tree, merely trapped in `MacOS/` by commit `29a8e8e6`. Restoring these files to the root preserves Git commit history, adheres strictly to FOSSEE specifications, and delivers a **100% self-contained repository** installable with a single `git clone -b installers`.
 
@@ -338,6 +338,6 @@ esim
 
 * **Repository:** [https://github.com/asitos/eSim/tree/installers](https://github.com/asitos/eSim/tree/installers)
 * **Branch:** `installers`
-* **Submission Subject:** `eSim Semester Long Internship - Autumn 2026 Submission Task 4`
+* **Submission Subject:** `eSim Semester Long Internship - Winter 2026 Submission Task 4`
 * **Contact Email:** `4shut0shparashar@gmail.com`
 

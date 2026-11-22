@@ -42,8 +42,15 @@ makedepends=(
 optdepends=(
     'makerchip-app: TL-Verilog support via SandPiper'
 )
-source=("git+https://github.com/asitos/eSim.git#branch=installers")
-sha256sums=('SKIP')
+options=('!lto') # GHDL mixes GNAT (Ada), GCC (C), and Clang++ (LLVM) - GCC LTO bytecode breaks Clang linking
+source=(
+    "git+https://github.com/asitos/eSim.git#branch=installers"
+    "pyhdlparser::git+https://github.com/hdl/pyhdlparser.git"
+)
+sha256sums=(
+    'SKIP'
+    'SKIP'
+)
 
 # eSim bundles ghdl, verilator, and a patched ngspice inside nghdl.zip.
 # We build them from those bundled tarballs to match upstream expectations.
@@ -80,18 +87,12 @@ build() {
     tar xJf nghdl-simulator-source.tar.xz
     cd nghdl-simulator-source
     mkdir -p release && cd release
+    CFLAGS="$CFLAGS -std=gnu17" \
     ../configure --enable-xspice --disable-debug \
                  --prefix=/usr \
                  --exec-prefix=/usr
-    make -j$(nproc)
+    make -j$(nproc) CFLAGS="$CFLAGS -std=gnu17"
     cd ../..
-
-    # --- Python dependencies in a venv ---
-    cd "$srcdir/eSim"
-    python -m venv --system-site-packages build_env
-    source build_env/bin/activate
-    pip install --quiet hdlparse
-    deactivate
 }
 
 package() {
@@ -127,7 +128,7 @@ package() {
     # install Python deps into the package venv
     install -dm755 "$pkgdir/opt/esim/env"
     python -m venv --system-site-packages "$pkgdir/opt/esim/env"
-    "$pkgdir/opt/esim/env/bin/pip" install --quiet hdlparse watchdog
+    "$pkgdir/opt/esim/env/bin/pip" install --no-deps "$srcdir/pyhdlparser"
 
     # launcher script
     install -dm755 "$pkgdir/usr/bin"
