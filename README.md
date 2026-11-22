@@ -298,6 +298,18 @@ analysis of `src/frontEnd/Workspace.py` pinpointed the root cause:
 
 a simple patch adding `self.var_appView.show()` and replacing `time.sleep` with `QCoreApplication.processEvents()` resolves this bug permanently.
 
+## investigated and ruled out (negative results)
+
+during testing, a few hypotheses were investigated and ruled out to avoid guessing or adding unnecessary workarounds:
+- **`libncurses5-dev` virtual package:** ngspice references `libncurses5-dev`. on Ubuntu 25.04 this resolves cleanly to the virtual package alias `libncurses-dev`.
+- **verilator 4.210 on GCC 14:** tested whether Verilator 4.210 compilation broke on GCC 14. it compiled and passed without source modifications.
+- **python 3.13 stdlib deprecations:** Python 3.13 dropped legacy modules like `telnetlib` and `cgi`. audited the eSim codebase; none of these modules are imported.
+- **missing `~/Desktop` directory:** on minimal Ubuntu cloud images, container environments, or headless setups, `$HOME/Desktop` does not exist by default, which causes the final `cp` step to fail. added `mkdir -p "$HOME/Desktop"` so the installer runs cleanly even without a desktop environment.
+
+## ubuntu 25.04 release lifecycle & EOL note
+
+Ubuntu 25.04 (Plucky Puffin) is an interim 9-month release that reached End-of-Life (EOL) in January 2026. while the primary `archive.ubuntu.com` mirrors still serve `plucky` packages during testing, long-term deployments should target Ubuntu 24.04 LTS or 26.04 LTS. if `archive.ubuntu.com` starts returning 404 in the future, updating `/etc/apt/sources.list.d/ubuntu.sources` to point to `old-releases.ubuntu.com` will keep the package sources functional.
+
 ## system specifications matrix
 
 | specification | target verification VM | development workstation |

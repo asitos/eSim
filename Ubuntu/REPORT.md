@@ -28,6 +28,7 @@ Below is a record of the issues investigated, traced through git history, and re
 | 6 | `cp: cannot stat 'images/logo.png': No such file` | Repository layout | UI branding assets committed under `MacOS/images/` | **Fixed** (`280df64b`) |
 | 7 | `esim` launcher fails: `cd: .../src/frontEnd: No such file` | Repository layout & runtime | `src/`, `Examples/`, and sub-libraries trapped in `MacOS/` | **Fixed** (`d9d3a534`) |
 | 8 | Unattended installation prompt & empty version string | `install-eSim.sh` & `25.04.sh` | Missing `-y` on virtualenv; regex required 3 digits | **Fixed** |
+| 9 | Missing `~/Desktop` directory breaks launcher copy | `install-eSim-25.04.sh` | `$HOME/Desktop` not guaranteed on minimal/cloud images | **Fixed** |
 
 ---
 
@@ -247,6 +248,26 @@ Below is a record of the issues investigated, traced through git history, and re
   A common assumption when encountering missing archives on `installers` is that the branch was never populated with binary assets, tempting one to bypass the branch and pull `eSim-2.5.zip` from external static servers.
 * **The Engineering Integrity Approach:**
   Task 4 explicitly specified working on the `installers` branch. Git forensics proved that all required release assets (`kicadLibrary`, `nghdl.zip`, `sky130_fd_pr`, `src/`, `Examples/`, and `images/`) were already present in the Git tree, merely trapped in `MacOS/` by commit `29a8e8e6`. Restoring these files to the root preserves Git commit history, adheres strictly to FOSSEE specifications, and delivers a **100% self-contained repository** installable with a single `git clone -b installers`.
+
+---
+
+### 11. Investigated and Ruled Out (Negative Results)
+
+To avoid speculative modifications or applying unneeded workarounds, several potential failure modes were empirically tested and ruled out:
+
+1. **`libncurses5-dev` Virtual Alias:** While legacy scripts install `libncurses5-dev`, Ubuntu 25.04 maps this cleanly to the virtual package `libncurses-dev`. Ngspice builds and links against it without failure.
+2. **Verilator 4.210 on Modern GCC:** Evaluated whether Verilator 4.210 bundled in `nghdl.zip` required patches for GCC 14. Compilation completed with exit code 0 and all self-tests succeeded.
+3. **Python 3.13 Standard Library Deprecations:** Python 3.13 removed legacy stdlib modules including `telnetlib` and `cgi`. Audited all Python files across `src/`; eSim does not rely on any removed modules.
+4. **Missing `~/Desktop` Directory:** On headless setups, minimal rootfs, container images, or WSL environments, `$HOME/Desktop` is not created by default. In `createDesktopStartScript()`, invoking `cp -vp esim.desktop $HOME/Desktop/` aborted the installation at the very last step. Hardened the routine with `mkdir -p "$HOME/Desktop"`.
+
+---
+
+### 12. Ubuntu 25.04 Release Lifecycle & EOL Note
+
+Ubuntu 25.04 (Plucky Puffin) is an interim release supported for 9 months, reaching official End-of-Life (EOL) in January 2026. 
+* Current testing confirms `archive.ubuntu.com` and `security.ubuntu.com` continue serving Plucky package pools.
+* For enterprise or classroom deployments, users should target LTS versions (Ubuntu 24.04 LTS or upcoming 26.04 LTS).
+* If canonical mirrors transition Plucky to the archive server in the future, updating `/etc/apt/sources.list.d/ubuntu.sources` to `http://old-releases.ubuntu.com/ubuntu/` restores full repository access.
 
 ---
 
