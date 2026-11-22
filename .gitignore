@@ -2,4 +2,5 @@
 ArchLinux/eSim/
 ArchLinux/src/
 ArchLinux/pkg/
+ArchLinux/pyhdlparser/
 *.pkg.tar.*

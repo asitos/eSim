@@ -36,8 +36,10 @@ makedepends=(
     'bison'
     'clang'
     'llvm18'        # llvm-config-18 for GHDL build (from [extra])
-    'python-pip'
-    'python-virtualenv'
+    'python-build'
+    'python-installer'
+    'python-setuptools'
+    'python-wheel'
 )
 optdepends=(
     'makerchip-app: TL-Verilog support via SandPiper'
@@ -93,6 +95,10 @@ build() {
                  --exec-prefix=/usr
     make -j$(nproc) CFLAGS="$CFLAGS -std=gnu17"
     cd ../..
+
+    # --- Python hdlparser wheel ---
+    cd "$srcdir/pyhdlparser"
+    python -m build --wheel --no-isolation
 }
 
 package() {
@@ -125,18 +131,17 @@ package() {
     install -dm755 "$pkgdir/usr/share/local"
     tar -xJf library/sky130_fd_pr.tar.xz -C "$pkgdir/usr/share/local/"
 
-    # install Python deps into the package venv
-    install -dm755 "$pkgdir/opt/esim/env"
-    python -m venv --system-site-packages "$pkgdir/opt/esim/env"
-    "$pkgdir/opt/esim/env/bin/pip" install --no-deps "$srcdir/pyhdlparser"
+    # install hdlparse module into system site-packages
+    cd "$srcdir/pyhdlparser"
+    python -m installer --destdir="$pkgdir" dist/*.whl
+    cd "$srcdir/eSim"
 
     # launcher script
     install -dm755 "$pkgdir/usr/bin"
     cat > "$pkgdir/usr/bin/esim" << 'EOF'
 #!/bin/bash
 cd /opt/esim/src/frontEnd
-source /opt/esim/env/bin/activate
-python3 Application.py "$@"
+exec python3 Application.py "$@"
 EOF
     chmod 755 "$pkgdir/usr/bin/esim"
 
